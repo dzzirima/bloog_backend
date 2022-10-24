@@ -228,3 +228,20 @@ export const getPosts = async (req, res, next) => {
     next(error);
   }
 };
+
+export const searchPosts = async (req, res, next) => {
+  try {
+    const { title } = req.query;
+
+    if (!title.trim())
+      return res.status(401).json({ error: "searxh query is  missing" });
+
+    const posts = await Post.find({ title: { $regex: title, $options: "i" } });
+
+    return res.json({
+      posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
