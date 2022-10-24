@@ -1,7 +1,7 @@
 import mongoose, { Mongoose } from "mongoose";
 
 const featuredPostSchema = mongoose.Schema({
-  title: {
+  post: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref:"Post"
