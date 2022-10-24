@@ -28,12 +28,18 @@ const addToFeaturedPost = async (postId) => {
   });
 };
 
+
+const isFeaturedPost = async(postId) =>{
+ const post = await FeaturedPost.findOne({post:postId})
+
+ return post ? true :false
+
+}
+
 const removeFromFeaturedPost = async (postId) => {
   await FeaturedPost.findOneAndDelete({
-    post:postId
-  })
-
-
+    post: postId,
+  });
 };
 
 export const createPOst = async (req, res, next) => {
@@ -96,7 +102,7 @@ export const deletePost = async (req, res, next) => {
   const post = await Post.findById(postId);
   if (!post) return res.status(400).json({ error: "Post not found" });
 
-  const  public_id  = post.thumbnail?.public_id;
+  const public_id = post.thumbnail?.public_id;
 
   if (public_id) {
     const { result } = await cloudinary.uploader.destroy(public_id);
@@ -104,17 +110,16 @@ export const deletePost = async (req, res, next) => {
       return res.status(404).json({ error: "Could not remove thumbnail !" });
   }
 
-  await Post.findByIdAndDelete(postId)
+  await Post.findByIdAndDelete(postId);
 
-  return res.json({message:'Post removed  successfully !!'})
+  return res.json({ message: "Post removed  successfully !!" });
 };
 
-
-export const updatePOst = async(req,res,next) =>{
+export const updatePOst = async (req, res, next) => {
   const { title, meta, content, slug, author, tags, featured } = req.body;
 
   const { postId } = req.params;
-  const {file} = req
+  const { file } = req;
 
   if (!isValidObjectId(postId))
     return res.status(401).json({ error: "Invalid request" });
@@ -124,9 +129,9 @@ export const updatePOst = async(req,res,next) =>{
   const post = await Post.findById(postId);
   if (!post) return res.status(400).json({ error: "Post not found" });
 
-  const  public_id  = post.thumbnail?.public_id;
+  const public_id = post.thumbnail?.public_id;
 
-  //removing the old thumbnail from cloudinary 
+  //removing the old thumbnail from cloudinary
 
   if (public_id && file) {
     const { result } = await cloudinary.uploader.destroy(public_id);
@@ -134,7 +139,7 @@ export const updatePOst = async(req,res,next) =>{
       return res.status(404).json({ error: "Could not remove thumbnail !" });
   }
 
-//prevously the post didnot have a thumbnail , now we want to associate it to new thumbnail
+  //prevously the post didnot have a thumbnail , now we want to associate it to new thumbnail
   if (file) {
     const { secure_url: url, public_id } = await cloudinary.uploader.upload(
       file.path
@@ -142,19 +147,17 @@ export const updatePOst = async(req,res,next) =>{
     post.thumbnail = { url, public_id };
   }
 
+  post.title = title;
+  post.meta = meta;
+  post.content = content;
+  post.slug = slug;
+  post.auther = author;
+  post.tags = tags;
 
-  post.title = title
-  post.meta = meta
-  post.content = content
-  post.slug = slug
-  post.auther = author
-  post.tags = tags
+  if (featured) await addToFeaturedPost(post._id);
+  else await removeFromFeaturedPost(post._id);
 
-  if(featured)  await addToFeaturedPost(post._id)
-  else await removeFromFeaturedPost(post._id)
-
-
-  await post.save()
+  await post.save();
 
   return res.json({
     post: {
@@ -166,16 +169,27 @@ export const updatePOst = async(req,res,next) =>{
       thumbnail: post.url,
       author: post.author,
       content,
-      featured
+      featured,
     },
+  });
+};
 
-  })
+export const getPost = async (req, res, next) => {
+  try {
+    const { postId } = req.params;
 
+    if (!isValidObjectId(postId))
+      return res.status(401).json({ error: "Invalid request" });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(400).json({ error: "Post not found" });
 
+    const featured =  await isFeaturedPost(post._id)
 
-
-
-
-  
-
-}
+    return res.json({post:{
+      ...post._doc,
+      featured
+    }});
+  } catch (error) {
+    next(error);
+  }
+};
