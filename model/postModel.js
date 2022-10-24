@@ -23,6 +23,9 @@ const postSchema = mongoose.Schema({
   },
   slug: {
     type: String,
+    required:true,
+    trim:true,
+    unique:true
 
   },
   thumbnail: {

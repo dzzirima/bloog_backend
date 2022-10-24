@@ -1,16 +1,17 @@
-import  Post from "../model/postModel.js"
+import Post from "../model/postModel.js";
 
-export const  createPOst   = async (req, res) =>{
+export const createPOst = async (req, res, next) => {
+  try {
+    const { title, meta, content, slug, author, tags } = req.body;
 
-    const {title , meta, content, slug, author,tags} = req.body
+    console.log(req.file);
 
+    const newPost = new Post({ title, meta, content, slug, author, tags });
 
-    console.log(req.file)
+    await newPost.save();
 
-
-    const newPost = new  Post({title , meta, content, slug, author,tags})
-
-    res.json(newPost)
-
-
-}
+    res.json(newPost);
+  } catch (error) {
+    next(error);
+  }
+};

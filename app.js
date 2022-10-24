@@ -13,6 +13,13 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use('/api/post',postRoutes)
 
+
+app.use((err,req,res,next) =>{
+    res.status(500).json({
+        error:err.message
+    })
+})
+
 const PORT = process.env.PORT
 
 app.listen(PORT , () =>{
