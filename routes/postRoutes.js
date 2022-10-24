@@ -1,5 +1,5 @@
 import express from "express";
-import { createPOst } from "../controllers/postController.js";
+import { createPOst, deletePost } from "../controllers/postController.js";
 import { parseData } from "../middleware/index.js";
 import multer from "../middleware/multer.js";
 
@@ -14,5 +14,7 @@ router.post(
   validate,
   createPOst
 );
+
+router.delete("/:postId",deletePost)
 
 export default router;

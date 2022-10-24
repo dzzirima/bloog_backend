@@ -1,6 +1,7 @@
 import Post from "../model/postModel.js";
 import FeaturedPost from "../model/featuredPost.js";
 import cloudinary from "../cloud/index.js";
+import { isValidObjectId } from "mongoose";
 
 const FEATURED_POST_COUNT = 4;
 
@@ -74,4 +75,28 @@ export const createPOst = async (req, res, next) => {
     console.log(error);
     next(error);
   }
+};
+
+export const deletePost = async (req, res, next) => {
+  const { postId } = req.params;
+
+  if (!isValidObjectId(postId))
+    return res.status(401).json({ error: "Invalid request" });
+
+  /** whnen we delete the post we want to delete the thumbnail */
+
+  const post = await Post.findById(postId);
+  if (!post) return res.status(400).json({ error: "Post not found" });
+
+  const  public_id  = post.thumbnail?.public_id;
+
+  if (public_id) {
+    const { result } = await cloudinary.uploader.destroy(public_id);
+    if (result !== "ok")
+      return res.status(404).json({ error: "Could not remove thumbnail !" });
+  }
+
+  await Post.findByIdAndDelete(postId)
+
+  return res.json({message:'Post removed  successfully !!'})
 };
