@@ -1,5 +1,5 @@
 import express from "express";
-import { createPOst, deletePost, getFeaturedPosts, getPost, updatePOst } from "../controllers/postController.js";
+import { createPOst, deletePost, getFeaturedPosts, getPost, getPosts, updatePOst } from "../controllers/postController.js";
 import { parseData } from "../middleware/index.js";
 import multer from "../middleware/multer.js";
 
@@ -27,6 +27,9 @@ router.delete("/:postId",deletePost)
 
 router.get("/single/:postId" , getPost)
 router.get("/featured-posts" , getFeaturedPosts)
+router.get("/posts" , getPosts)
+
+
 
 
 export default router;

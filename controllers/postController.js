@@ -109,7 +109,7 @@ export const deletePost = async (req, res, next) => {
   }
 
   await Post.findByIdAndDelete(postId);
-  await removeFromFeaturedPost(postId)
+  await removeFromFeaturedPost(postId);
 
   return res.json({ message: "Post removed  successfully !!" });
 };
@@ -206,6 +206,23 @@ export const getFeaturedPosts = async (req, res, next) => {
       posts: featuredPosts.map(({ post }) => ({
         post,
       })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPosts = async (req, res, next) => {
+  try {
+    const { pageNo = 0, limit = 10 } = req.query;
+
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .skip(parseInt(pageNo) * parseInt(limit))
+      .limit(parseInt(limit));
+
+    return res.json({
+      posts,
     });
   } catch (error) {
     next(error);
