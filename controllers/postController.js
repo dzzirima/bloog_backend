@@ -28,13 +28,11 @@ const addToFeaturedPost = async (postId) => {
   });
 };
 
+const isFeaturedPost = async (postId) => {
+  const post = await FeaturedPost.findOne({ post: postId });
 
-const isFeaturedPost = async(postId) =>{
- const post = await FeaturedPost.findOne({post:postId})
-
- return post ? true :false
-
-}
+  return post ? true : false;
+};
 
 const removeFromFeaturedPost = async (postId) => {
   await FeaturedPost.findOneAndDelete({
@@ -111,6 +109,7 @@ export const deletePost = async (req, res, next) => {
   }
 
   await Post.findByIdAndDelete(postId);
+  await removeFromFeaturedPost(postId)
 
   return res.json({ message: "Post removed  successfully !!" });
 };
@@ -183,12 +182,31 @@ export const getPost = async (req, res, next) => {
     const post = await Post.findById(postId);
     if (!post) return res.status(400).json({ error: "Post not found" });
 
-    const featured =  await isFeaturedPost(post._id)
+    const featured = await isFeaturedPost(post._id);
 
-    return res.json({post:{
-      ...post._doc,
-      featured
-    }});
+    return res.json({
+      post: {
+        ...post._doc,
+        featured,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getFeaturedPosts = async (req, res, next) => {
+  try {
+    const featuredPosts = await FeaturedPost.find({})
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .populate("post");
+
+    return res.json({
+      posts: featuredPosts.map(({ post }) => ({
+        post,
+      })),
+    });
   } catch (error) {
     next(error);
   }
