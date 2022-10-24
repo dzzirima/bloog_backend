@@ -1,11 +1,16 @@
 import express from "express";
-import { createPOst, deletePost, getFeaturedPosts, getPost, getPosts, searchPosts, updatePOst } from "../controllers/postController.js";
+import { createPOst, deletePost, getFeaturedPosts, getPost, getPosts, getRelatedPosts, searchPosts, updatePOst, uploadImage } from "../controllers/postController.js";
 import { parseData } from "../middleware/index.js";
 import multer from "../middleware/multer.js";
 
 import { postValidator, validate } from "../middleware/postValidator.js";
 const router = express.Router();
 
+router.post(
+  "/upload-image",
+  multer.single("image"),
+  uploadImage
+);
 router.post(
   "/create",
   multer.single("thumbnail"),
@@ -29,6 +34,7 @@ router.get("/single/:postId" , getPost)
 router.get("/featured-posts" , getFeaturedPosts)
 router.get("/posts" , getPosts)
 router.get("/search" , searchPosts)
+router.get("/related-posts/:postId" , getRelatedPosts)
 
 
 

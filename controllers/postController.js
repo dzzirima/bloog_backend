@@ -245,3 +245,43 @@ export const searchPosts = async (req, res, next) => {
     next(error);
   }
 };
+export const getRelatedPosts = async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+
+    if (!isValidObjectId(postId))
+      return res.status(401).json({ error: "Invalid request !!" });
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(400).json({ error: "Post not found !!" });
+    const relatedPosts = await Post.find({
+      tags: { $in: [...post.tags] },
+      _id: { $ne: post._id },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    return res.json({
+      relatedPosts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const uploadImage = async (req, res, next) => {
+  try {
+    const { file } = req;
+
+    if (!file)
+      return res.status(401).json({ error: "Image file is missing !!!" });
+
+    const { secure_url: url } = await cloudinary.uploader.upload(file.path);
+
+
+    return res.json({
+     image:url
+    });
+  } catch (error) {
+    next(error);
+  }
+};
